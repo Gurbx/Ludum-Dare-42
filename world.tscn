@@ -1,0 +1,215 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://tileset.tres" type="TileSet" id=1]
+[ext_resource path="res://Scenes/Boss.tscn" type="PackedScene" id=2]
+[ext_resource path="res://UI/UI.tscn" type="PackedScene" id=3]
+[ext_resource path="res://TileMap.gd" type="Script" id=4]
+[ext_resource path="res://Props/BombHandler.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Props/BulletSpawner.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Player/Player.tscn" type="PackedScene" id=7]
+[ext_resource path="res://Props/MeteorSpawner.tscn" type="PackedScene" id=8]
+
+[sub_resource type="GDScript" id=1]
+
+script/source = "extends Node
+
+var big_bomb_scene = preload(\"res://Player//BigBomb.tscn\")
+
+var face2_started = false
+var face7_started = false
+var face = 0
+
+var boss_damaged = false
+#var spawn_meteors = false
+#var spawn_slimes = false
+
+
+func _ready():
+	$BombHandler.set_tilemap($TileMap)
+	$BombHandler/Player.set_tilemap($TileMap)
+	$BombHandler.set_player($BombHandler/Player)
+	$BombHandler/MeteorSpawner.set_tilemap($TileMap)
+
+func _on_Timer_timeout():
+	face += 1
+	if face == 1: # Spawn slimes for 5 sec
+		$BombHandler.set_spawning(true)
+		$Timer.wait_time = 4
+		$Timer.start()
+	if face == 2: 
+		$BombHandler.set_spawning(false)
+		# Wait for slimes to finnish >> processes
+	if face == 3:
+		$BombHandler/BulletSpawner.spawn()
+		$Timer.wait_time = 5
+		$Timer.start()
+	if face == 4:
+		$BombHandler/MeteorSpawner.set_spawning(true)
+		$Timer.wait_time = 3
+		$Timer.start()
+	if face == 5:
+		$BombHandler/MeteorSpawner.set_spawning(false)
+		$Timer.wait_time = 2
+		$Timer.start()
+	if face == 6:
+		$BombHandler.set_spawning(true)
+		$Timer.wait_time = 8
+		$Timer.start()
+	if face == 7:
+		$BombHandler.set_spawning(false)
+		#WAIT for proccess
+	if face == 8:
+		spawn_boss_bomb()
+	if face == 9:
+		$BombHandler/BulletSpawner.can_spawn = true
+		$BombHandler.set_spawning(true)
+		$Timer.wait_time = 15
+		$Timer.start()
+	if face == 10:
+		$BombHandler/MeteorSpawner.set_spawning(true)
+		$Timer.wait_time = 4
+		$Timer.start()
+	if face == 11:
+		$BombHandler/MeteorSpawner.set_spawning(false)
+		$Timer.wait_time = 15
+		$Timer.start()
+	if face == 12:
+		spawn_boss_bomb()
+		$BombHandler.set_spawning(false)
+
+
+func _process(delta):
+	if face == 2:
+		if $BombHandler.ongoing() == false && !face2_started:
+			spawn_boss_bomb()
+			face2_started = true
+	if face == 7:
+		if $BombHandler.ongoing() == false && !face7_started:
+			$Timer.wait_time = 2
+			$Timer.start()
+			face7_started = true
+#	# Called every frame. Delta is time since last frame.
+#	# Update game logic here.
+#	pass
+
+func spawn_boss_bomb():
+	var bomb = big_bomb_scene.instance()
+	var placed = false
+	while(!placed):
+		var pos = Vector2(rand_range(32, 700),rand_range(32, 700))
+		if $TileMap.is_tile_destroyed(pos) == false:
+			bomb.position = pos
+			placed = true
+	
+	$BombHandler.add_child(bomb)
+	bomb.connect(\"boss_damaged\", self, \"boss_bomb_exploded\")
+	boss_damaged = false
+
+#TEST
+#func _input(event):
+#	if event.is_action_pressed(\"mouse_lclick\"):
+#		spawn_boss_bomb()
+#		$UI.boss_damaged()
+#		$BombHandler/BulletSpawner.spawn()
+#		$BombHandler/BulletSpawner.spawn_bullets()
+#		spawn_slimes = !spawn_slimes
+#		$BombHandler.set_spawning(spawn_slimes)
+#
+#	if event.is_action_pressed(\"mouse_rclick\"):
+#		spawn_meteors = !spawn_meteors
+#		$BombHandler/MeteorSpawner.set_spawning(spawn_meteors)
+
+func boss_bomb_exploded():
+	$BombHandler/Player.shake_amount = 20
+	boss_damaged = true
+	$UI.boss_damaged()
+	$Timer.wait_time = 3
+	$Timer.start()
+
+
+func _on_UI_player_dead():
+	$BombHandler/Player.player_died()
+
+
+
+"
+
+[node name="world" type="Node"]
+
+script = SubResource( 1 )
+
+[node name="Timer" type="Timer" parent="." index="0"]
+
+process_mode = 1
+wait_time = 3.0
+one_shot = true
+autostart = true
+
+[node name="TileMap2" type="TileMap" parent="." index="1"]
+
+visible = false
+mode = 0
+tile_set = ExtResource( 1 )
+cell_size = Vector2( 64, 64 )
+cell_quadrant_size = 16
+cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+cell_half_offset = 2
+cell_tile_origin = 0
+cell_y_sort = false
+cell_clip_uv = false
+collision_use_kinematic = false
+collision_friction = 1.0
+collision_bounce = 0.0
+collision_layer = 1
+collision_mask = 1
+occluder_light_mask = 1
+format = 1
+tile_data = PoolIntArray( -262140, 0, 0, -262139, 0, 0, -262138, 0, 0, -262137, 0, 0, -196604, 0, 0, -196603, 0, 0, -196602, 0, 0, -196601, 0, 0, -131068, 0, 0, -131067, 0, 0, -131066, 0, 0, -131065, 0, 0, -65532, 2, 0, -65531, 2, 0, -65530, 2, 0, -65529, 2, 0 )
+
+[node name="Boss" parent="." index="2" instance=ExtResource( 2 )]
+
+visible = false
+
+[node name="UI" parent="." index="3" instance=ExtResource( 3 )]
+
+[node name="TileMap" type="TileMap" parent="." index="4"]
+
+mode = 0
+tile_set = ExtResource( 1 )
+cell_size = Vector2( 64, 64 )
+cell_quadrant_size = 16
+cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+cell_half_offset = 2
+cell_tile_origin = 0
+cell_y_sort = false
+cell_clip_uv = false
+collision_use_kinematic = false
+collision_friction = 1.0
+collision_bounce = 0.0
+collision_layer = 1
+collision_mask = 1
+occluder_light_mask = 1
+format = 1
+tile_data = PoolIntArray( 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 5, 0, 4, 0, 0, 5, 0, 0, 6, 0, 0, 7, 5, 0, 8, 0, 0, 9, 0, 0, 10, 5, 0, 11, 0, 0, 65536, 0, 0, 65537, 4, 0, 65538, 0, 0, 65539, 0, 0, 65540, 6, 0, 65541, 0, 0, 65542, 0, 0, 65543, 0, 0, 65544, 0, 0, 65545, 5, 0, 65546, 4, 0, 65547, 0, 0, 131072, 0, 0, 131073, 0, 0, 131074, 0, 0, 131075, 0, 0, 131076, 6, 0, 131077, 6, 0, 131078, 0, 0, 131079, 6, 0, 131080, 0, 0, 131081, 0, 0, 131082, 5, 0, 131083, 0, 0, 196608, 6, 0, 196609, 0, 0, 196610, 6, 0, 196611, 0, 0, 196612, 0, 0, 196613, 0, 0, 196614, 0, 0, 196615, 0, 0, 196616, 5, 0, 196617, 0, 0, 196618, 0, 0, 196619, 7, 0, 262144, 0, 0, 262145, 0, 0, 262146, 6, 0, 262147, 4, 0, 262148, 6, 0, 262149, 0, 0, 262150, 7, 0, 262151, 0, 0, 262152, 0, 0, 262153, 0, 0, 262154, 4, 0, 262155, 0, 0, 327680, 6, 0, 327681, 0, 0, 327682, 7, 0, 327683, 0, 0, 327684, 0, 0, 327685, 7, 0, 327686, 6, 0, 327687, 0, 0, 327688, 0, 0, 327689, 5, 0, 327690, 0, 0, 327691, 0, 0, 393216, 0, 0, 393217, 0, 0, 393218, 0, 0, 393219, 5, 0, 393220, 0, 0, 393221, 0, 0, 393222, 0, 0, 393223, 0, 0, 393224, 6, 0, 393225, 0, 0, 393226, 0, 0, 393227, 6, 0, 458752, 0, 0, 458753, 5, 0, 458754, 6, 0, 458755, 0, 0, 458756, 6, 0, 458757, 0, 0, 458758, 0, 0, 458759, 0, 0, 458760, 0, 0, 458761, 0, 0, 458762, 0, 0, 458763, 0, 0, 524288, 0, 0, 524289, 0, 0, 524290, 5, 0, 524291, 0, 0, 524292, 0, 0, 524293, 0, 0, 524294, 0, 0, 524295, 0, 0, 524296, 6, 0, 524297, 0, 0, 524298, 6, 0, 524299, 0, 0, 589824, 6, 0, 589825, 0, 0, 589826, 4, 0, 589827, 0, 0, 589828, 5, 0, 589829, 6, 0, 589830, 0, 0, 589831, 0, 0, 589832, 0, 0, 589833, 0, 0, 589834, 0, 0, 589835, 0, 0, 655360, 0, 0, 655361, 6, 0, 655362, 0, 0, 655363, 0, 0, 655364, 6, 0, 655365, 0, 0, 655366, 0, 0, 655367, 6, 0, 655368, 0, 0, 655369, 0, 0, 655370, 6, 0, 655371, 7, 0, 720896, 0, 0, 720897, 0, 0, 720898, 5, 0, 720899, 5, 0, 720900, 4, 0, 720901, 0, 0, 720902, 0, 0, 720903, 7, 0, 720904, 0, 0, 720905, 7, 0, 720906, 0, 0, 720907, 0, 0, 786432, 2, 0, 786433, 2, 0, 786434, 2, 0, 786435, 2, 0, 786436, 2, 0, 786437, 2, 0, 786438, 2, 0, 786439, 2, 0, 786440, 2, 0, 786441, 2, 0, 786442, 2, 0, 786443, 2, 0 )
+script = ExtResource( 4 )
+_sections_unfolded = [ "Cell", "Transform" ]
+
+[node name="BombHandler" parent="." index="5" instance=ExtResource( 5 )]
+
+editor/display_folded = true
+
+[node name="BulletSpawner" parent="BombHandler" index="0" instance=ExtResource( 6 )]
+
+[node name="Player" parent="BombHandler" index="2" instance=ExtResource( 7 )]
+
+position = Vector2( 416, 352 )
+
+[node name="MeteorSpawner" parent="BombHandler" index="3" instance=ExtResource( 8 )]
+
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
+
+[connection signal="player_dead" from="UI" to="." method="_on_UI_player_dead"]
+
+[connection signal="damaged" from="BombHandler/Player" to="UI" method="_on_Player_damaged"]
+
+
