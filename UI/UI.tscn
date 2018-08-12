@@ -1,0 +1,101 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://UI/UI.gd" type="Script" id=1]
+[ext_resource path="res://UI/bar_bg.png" type="Texture" id=2]
+[ext_resource path="res://UI/bar.tscn" type="PackedScene" id=3]
+[ext_resource path="res://UI/skull.png" type="Texture" id=4]
+[ext_resource path="res://UI/bossEx.wav" type="AudioStream" id=5]
+[ext_resource path="res://UI/Heart.tscn" type="PackedScene" id=6]
+
+[node name="UI" type="CanvasLayer"]
+
+layer = 1
+offset = Vector2( 0, 0 )
+rotation = 0.0
+scale = Vector2( 1, 1 )
+transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+script = ExtResource( 1 )
+
+[node name="boss" type="Node2D" parent="." index="0"]
+
+position = Vector2( 132.616, 120.412 )
+scale = Vector2( 0.8, 0.8 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="bar_bg" type="Sprite" parent="boss" index="0"]
+
+position = Vector2( 545.744, 589.799 )
+scale = Vector2( 0.5, 0.5 )
+texture = ExtResource( 2 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="bar" parent="boss" index="1" instance=ExtResource( 3 )]
+
+position = Vector2( 483.732, 592.055 )
+scale = Vector2( 0.5, 0.5 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="bar2" parent="boss" index="2" instance=ExtResource( 3 )]
+
+position = Vector2( 591.15, 592.055 )
+scale = Vector2( 0.5, 0.5 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="bar3" parent="boss" index="3" instance=ExtResource( 3 )]
+
+position = Vector2( 698.697, 592.055 )
+scale = Vector2( 0.5, 0.5 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="skull" type="Sprite" parent="boss" index="4"]
+
+visible = false
+position = Vector2( 397.777, 609.68 )
+scale = Vector2( 0.2, 0.15 )
+texture = ExtResource( 4 )
+_sections_unfolded = [ "Transform" ]
+
+[node name="WinTimer" type="Timer" parent="boss" index="5"]
+
+process_mode = 1
+wait_time = 2.0
+one_shot = false
+autostart = false
+
+[node name="BossDamage" type="AudioStreamPlayer" parent="boss" index="6"]
+
+stream = ExtResource( 5 )
+volume_db = -10.0
+pitch_scale = 1.0
+autoplay = false
+mix_target = 0
+bus = "Master"
+
+[node name="Life" type="Node" parent="." index="1"]
+
+[node name="Heart" parent="Life" index="0" instance=ExtResource( 6 )]
+
+position = Vector2( 30, 30 )
+
+[node name="Heart2" parent="Life" index="1" instance=ExtResource( 6 )]
+
+position = Vector2( 80, 30 )
+start_time = 1
+
+[node name="Heart3" parent="Life" index="2" instance=ExtResource( 6 )]
+
+position = Vector2( 130, 30 )
+start_time = 2
+
+[node name="DeathTimer" type="Timer" parent="Life" index="3"]
+
+process_mode = 1
+wait_time = 1.0
+one_shot = true
+autostart = false
+
+[connection signal="timeout" from="boss/WinTimer" to="." method="_on_WinTimer_timeout"]
+
+[connection signal="timeout" from="Life/DeathTimer" to="." method="_on_DeathTimer_timeout"]
+
+
