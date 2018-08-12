@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/Laser3.wav-859a5ea070ecbe18bee77654143c13b4.sample"
+
+[deps]
+
+source_file="res://Player/jump/v2/Laser3.wav"
+dest_files=[ "res://.import/Laser3.wav-859a5ea070ecbe18bee77654143c13b4.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=true
+edit/normalize=true
+edit/loop=false
+compress/mode=0
